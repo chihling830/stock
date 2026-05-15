@@ -1,195 +1,136 @@
 import json
+import re
 import time
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yfinance as yf
 
+HTML_FILE = Path('index.html')
+OUT_FILE = Path('quotes.json')
 
-SYMBOLS = {
-    # 台股上市 TW
-    "2330": "2330.TW",
-    "2404": "2404.TW",
-    "6196": "6196.TW",
-    "3680": "3680.TW",
-    "1560": "1560.TW",
-    "3711": "3711.TW",
-    "6239": "6239.TW",
-    "2449": "2449.TW",
-    "3037": "3037.TW",
-    "8046": "8046.TW",
-    "2383": "2383.TW",
-    "6213": "6213.TW",
-    "2313": "2313.TW",
-    "3044": "3044.TW",
-    "4958": "4958.TW",
-    "2368": "2368.TW",
-    "8358": "8358.TW",
-    "1815": "1815.TW",
-    "1717": "1717.TW",
-    "2327": "2327.TW",
-    "2492": "2492.TW",
-    "2456": "2456.TW",
-    "2308": "2308.TW",
-    "2301": "2301.TW",
-    "3023": "3023.TW",
-    "8255": "8255.TW",
-    "2481": "2481.TW",
-    "3017": "3017.TW",
-    "3324": "3324.TW",
-    "3653": "3653.TW",
-    "8996": "8996.TW",
-    "2421": "2421.TW",
-    "2059": "2059.TW",
-    "2345": "2345.TW",
-    "3596": "3596.TW",
-    "2408": "2408.TW",
-    "2344": "2344.TW",
-    "6770": "6770.TW",
-    "2337": "2337.TW",
-    "2451": "2451.TW",
-    "4967": "4967.TW",
-    "6285": "6285.TW",
-    "2367": "2367.TW",
-    "2485": "2485.TW",
-    "3380": "3380.TW",
-    "2314": "2314.TW",
-
-    # 台股上櫃 TWO
-    "3131": "3131.TWO",
-    "3583": "3583.TWO",
-    "3413": "3413.TWO",
-    "6187": "6187.TWO",
-    "6223": "6223.TWO",
-    "6515": "6515.TWO",
-    "7769": "7769.TWO",
-    "3189": "3189.TWO",
-    "6274": "6274.TWO",
-    "5475": "5475.TWO",
-    "5317": "5317.TWO",
-    "3357": "3357.TWO",
-    "3068": "3068.TWO",
-    "6173": "6173.TWO",
-    "3003": "3003.TWO",
-    "3211": "3211.TWO",
-    "3323": "3323.TWO",
-    "6805": "6805.TWO",
-    "6591": "6591.TWO",
-    "3363": "3363.TWO",
-    "3163": "3163.TWO",
-    "3081": "3081.TWO",
-    "4979": "4979.TWO",
-    "6442": "6442.TWO",
-    "3533": "3533.TWO",
-    "8299": "8299.TWO",
-    "5289": "5289.TWO",
-    "3491": "3491.TWO",
-    "3138": "3138.TWO",
-    "3105": "3105.TWO",
-    "6568": "6568.TWO",
-
-    # 美股
-    "ASML": "ASML",
-    "AMAT": "AMAT",
-    "LRCX": "LRCX",
-    "KLAC": "KLAC",
-    "ETN": "ETN",
-    "GEV": "GEV",
-    "PWR": "PWR",
-    "CEG": "CEG",
-    "VST": "VST",
-    "LITE": "LITE",
-    "COHR": "COHR",
-    "AVGO": "AVGO",
-    "GLW": "GLW",
-    "CIEN": "CIEN",
-    "ANET": "ANET",
-    "MU": "MU",
-    "SNDK": "SNDK",
-    "ASTS": "ASTS",
-    "IRDM": "IRDM",
-    "RKLB": "RKLB",
-    "LMT": "LMT",
-
-    # 日股
-    "6981": "6981.T",
-
-    # 韓股
-    "000660": "000660.KS",
-    "005930": "005930.KS",
+EXCHANGE_SUFFIX = {
+    'TWSE': '.TW',
+    'TPEX': '.TWO',
+    'NASDAQ': '',
+    'NYSE': '',
+    'TSE': '.T',
+    'KRX': '.KS',
 }
 
+FALLBACK_SUFFIXES = {
+    'TWSE': ['.TW', '.TWO'],
+    'TPEX': ['.TWO', '.TW'],
+    'TSE': ['.T'],
+    'KRX': ['.KS', '.KQ'],
+    'NASDAQ': [''],
+    'NYSE': [''],
+}
 
-def scalar(value):
+def extract_symbols_from_html(html_path: Path) -> dict:
+    """從 TradingView 連結自動抓股票代號，避免手動漏掉。"""
+    html = html_path.read_text(encoding='utf-8')
+    pattern = re.compile(r'https://www\.tradingview\.com/symbols/([A-Z]+)-([^/"#?]+)/')
+    symbols = {}
+    for exchange, symbol in pattern.findall(html):
+        code = symbol.strip()
+        if not code:
+            continue
+        suffix = EXCHANGE_SUFFIX.get(exchange, '')
+        symbols[code] = {
+            'exchange': exchange,
+            'ticker': f'{code}{suffix}',
+        }
+    return symbols
+
+def to_float(value):
     if isinstance(value, pd.Series):
         return float(value.iloc[0])
     return float(value)
 
+def format_price(x: float, ticker: str) -> str:
+    # 台股、日股、韓股通常不用美元符號；美股保留兩位小數。
+    if ticker.endswith(('.TW', '.TWO', '.T', '.KS', '.KQ')):
+        if x >= 100:
+            return f'{x:,.0f}'
+        return f'{x:,.2f}'.rstrip('0').rstrip('.')
+    return f'${x:,.2f}'
 
-def format_price(x):
-    if x >= 100:
-        return f"{x:,.0f}"
-    return f"{x:,.2f}".rstrip("0").rstrip(".")
-
-
-def fetch_one(code, ticker):
-    df = yf.download(
+def try_download(ticker: str):
+    return yf.download(
         ticker,
-        period="10d",
-        interval="1d",
+        period='10d',
+        interval='1d',
         progress=False,
         auto_adjust=False,
         threads=False,
     )
 
-    if df is None or df.empty or len(df) < 2:
-        return None
+def fetch_quote(code: str, exchange: str, primary_ticker: str):
+    suffixes = FALLBACK_SUFFIXES.get(exchange, [''])
+    tickers = []
+    if primary_ticker not in tickers:
+        tickers.append(primary_ticker)
+    for suffix in suffixes:
+        t = code + suffix
+        if t not in tickers:
+            tickers.append(t)
 
-    close = scalar(df["Close"].dropna().iloc[-1])
-    prev_close = scalar(df["Close"].dropna().iloc[-2])
+    last_error = None
+    for ticker in tickers:
+        try:
+            df = try_download(ticker)
+            if df is None or df.empty:
+                continue
 
-    if prev_close == 0:
-        return None
+            close_series = df['Close'].dropna()
+            if len(close_series) < 2:
+                continue
 
-    change_pct = (close / prev_close - 1) * 100
+            close = to_float(close_series.iloc[-1])
+            prev_close = to_float(close_series.iloc[-2])
+            if prev_close == 0:
+                continue
 
-    return {
-        "ticker": ticker,
-        "close": format_price(close),
-        "change_pct": f"{change_pct:+.2f}%"
-    }
+            change_pct = (close / prev_close - 1) * 100
+            return {
+                'ticker': ticker,
+                'close': format_price(close, ticker),
+                'change_pct': f'{change_pct:+.2f}%'
+            }
+        except Exception as e:
+            last_error = str(e)
 
+    raise RuntimeError(last_error or 'No data')
 
 def main():
-    quotes = {
-        "_updated_at": datetime.now(ZoneInfo("Asia/Taipei")).strftime("%Y/%m/%d")
-    }
+    if not HTML_FILE.exists():
+        raise FileNotFoundError('找不到 index.html。請確認 update_quotes.py 跟 index.html 在同一層。')
 
+    symbols = extract_symbols_from_html(HTML_FILE)
+    quotes = {
+        '_updated_at': datetime.now(ZoneInfo('Asia/Taipei')).strftime('%Y/%m/%d'),
+        '_source': 'yfinance',
+    }
     failed = {}
 
-    for code, ticker in SYMBOLS.items():
+    for i, (code, info) in enumerate(symbols.items(), start=1):
+        exchange = info['exchange']
+        ticker = info['ticker']
         try:
-            result = fetch_one(code, ticker)
-            if result:
-                quotes[code] = result
-                print(f"OK {code} {ticker}: {result['close']} {result['change_pct']}")
-            else:
-                failed[code] = ticker
-                print(f"NO DATA {code} {ticker}")
+            q = fetch_quote(code, exchange, ticker)
+            quotes[code] = q
+            print(f'[{i}/{len(symbols)}] OK {code} {q["ticker"]}: {q["close"]} {q["change_pct"]}')
         except Exception as e:
-            failed[code] = f"{ticker} | {e}"
-            print(f"FAILED {code} {ticker}: {e}")
+            failed[code] = {'exchange': exchange, 'ticker': ticker, 'reason': str(e)}
+            print(f'[{i}/{len(symbols)}] FAIL {code} {ticker}: {e}')
+        time.sleep(0.25)
 
-        time.sleep(0.3)
+    quotes['_failed'] = failed
+    OUT_FILE.write_text(json.dumps(quotes, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(f'Saved {OUT_FILE}. success={len(quotes)-3}, failed={len(failed)}')
 
-    quotes["_failed"] = failed
-
-    with open("quotes.json", "w", encoding="utf-8") as f:
-        json.dump(quotes, f, ensure_ascii=False, indent=2)
-
-    print(f"Saved quotes.json, success={len(quotes) - 2}, failed={len(failed)}")
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
