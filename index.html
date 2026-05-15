@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 浪潮供應鏈｜精簡版</title>
+<style>
+:root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #131829;
+    --bg-card: #1a2138;
+    --bg-hover: #232b48;
+    --border: #2a3454;
+    --text-primary: #e8ecf5;
+    --text-secondary: #a8b3c8;
+    --text-muted: #6b7895;
+    --accent-cyan: #00d4ff;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+    --accent-yellow: #fbbf24;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+<script>
+async function updateQuotes() {
+    try {
+        const res = await fetch("quotes.json?t=" + Date.now());
+        const quotes = await res.json();
+
+        document.querySelectorAll(".stock-table tbody tr").forEach(row => {
+            const codeLink = row.querySelector(".code a");
+            if (!codeLink) return;
+
+            const code = codeLink.textContent.trim();
+            const q = quotes[code];
+            if (!q) return;
+
+            const cells = row.querySelectorAll("td");
+            if (cells.length < 5) return;
+
+            const priceCell = cells[3];
+            const changeCell = cells[4];
+
+            priceCell.textContent = q.close;
+            priceCell.className = "price";
+
+            changeCell.textContent = q.change_pct;
+
+            if (q.change_pct.startsWith("+")) {
+                changeCell.className = "change up";
+            } else if (q.change_pct.startsWith("-")) {
+                changeCell.className = "change down";
+            } else {
+                changeCell.className = "change";
+            }
+        });
+
+        document.querySelectorAll(".update-tag").forEach(tag => {
+            tag.textContent = "📅 資料更新：" + quotes._updated_at;
+        });
+
+        document.querySelectorAll("footer p").forEach(p => {
+            if (p.textContent.includes("資料更新")) {
+                p.textContent = "AI 浪潮供應鏈精簡版 ・ 資料更新 " + quotes._updated_at;
+            }
+        });
+
+    } catch (err) {
+        console.warn("報價更新失敗，保留原始表格資料", err);
+    }
+}
+
+updateQuotes();
+</script>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 16px;
+}
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+.info-bar {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.info-bar strong { color: var(--accent-cyan); }
+.update-tag {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--accent-cyan);
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 0 4px;
+}
+
+header {
+    padding: 56px 0 24px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+header .subtitle {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+header .meta {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+nav {
+    background: rgba(19, 24, 41, 0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+}
+
+nav .nav-inner {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 0 24px;
+    justify-content: center;
+}
+
+nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+}
+
+nav a:hover {
+    background: var(--bg-hover);
+    color: var(--accent-cyan);
+}
+
+section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+
+section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+section h2 .num-tag {
+    color: var(--accent-cyan);
+    font-family: "SF Mono", monospace;
+    font-size: 16px;
+    margin-right: 8px;
+    font-weight: 600;
+}
+
+section h3 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
+section p { color: var(--text-secondary); margin-bottom: 12px; font-size: 14px; }
+.lead { font-size: 15px; color: var(--text-secondary); margin-bottom: 16px; }
+
+.topic-tag {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-weight: 400;
+}
+
+.topic-thesis {
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent-cyan);
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 12px 0 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+.topic-thesis strong { color: var(--accent-cyan); }
+
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+    margin: 12px 0 20px;
+}
+
+.why-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.why-card .label {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.why-card .value {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.stock-table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.stock-table-header {
+    background: var(--bg-hover);
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+.stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.stock-table th {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stock-table th.num { text-align: right; }
+
+.stock-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: middle;
+}
+
+.stock-table tr:last-child td { border-bottom: none; }
+.stock-table tr:hover { background: var(--bg-hover); }
+
+.stock-table .code a {
+    font-family: "SF Mono", Menlo, monospace;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.stock-table .code a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.stock-table .company {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.stock-table .price {
+    font-family: "SF Mono", Menlo, monospace;
+    font-weight: 700;
+    text-align: right;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.stock-table .change {
+    font-family: "SF Mono", Menlo, monospace;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.stock-table .change.up { color: var(--accent-green); }
+.stock-table .change.down { color: var(--accent-red); }
+.stock-table .no-data { color: var(--text-muted); text-align: right; }
+
+.stock-table .role { color: var(--text-secondary); font-size: 12px; }
+
+.stock-table .note { color: var(--text-muted); font-size: 11px; }
+.stock-table .note.hot { color: var(--accent-red); }
+
+.logic-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+}
+.logic-box h4 { margin: 0 0 8px 0; color: var(--accent-cyan); font-size: 15px; }
+.logic-box ul { margin: 8px 0 0 20px; color: var(--text-secondary); font-size: 13px; }
+.logic-box li { margin: 4px 0; }
+
+.flowchart-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+}
+.flowchart { min-width: 920px; }
+
+.layer { display: flex; justify-content: center; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+
+.flow-node {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 110px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.flow-node:hover { border-color: var(--accent-cyan); }
+
+.flow-node.root {
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    min-width: 260px;
+    padding: 12px 20px;
+}
+.flow-node.root .title { font-size: 17px; font-weight: 700; color: var(--accent-cyan); }
+.flow-node.demand { background: rgba(168, 85, 247, 0.06); border-color: rgba(168, 85, 247, 0.4); }
+.flow-node .title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.flow-node .desc { font-size: 11px; color: var(--text-muted); }
+
+.arrow-down { text-align: center; color: var(--text-muted); font-size: 18px; margin: 4px 0; }
+.layer-label { text-align: center; color: var(--text-muted); font-size: 11px; letter-spacing: 1.5px; margin: 10px 0 4px; }
+
+.disclaimer {
+    background: rgba(251, 191, 36, 0.05);
+    border-left: 3px solid var(--accent-yellow);
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin: 24px 0;
+}
+.disclaimer h3 { margin: 0 0 8px 0; color: var(--accent-yellow); font-size: 15px; }
+.disclaimer p { color: var(--text-secondary); font-size: 13px; margin-bottom: 6px; }
+
+footer { text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 12px; }
+
+@media (max-width: 768px) {
+    header h1 { font-size: 24px; }
+    section h2 { font-size: 20px; }
+    .stock-table { font-size: 12px; }
+    .stock-table th, .stock-table td { padding: 8px 8px; }
+    nav .nav-inner { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="info-bar">
+    <span class="update-tag">📅 資料更新：2026/05/14</span>
+    需要更新請告訴 Claude：<strong>「幫我更新供應鏈報價」</strong>
+</div>
+
+<header>
+    <div class="container">
+        <h1>AI 浪潮供應鏈</h1>
+        <p class="subtitle">從模型到個股的完整邏輯 ・ 9 大題材 ・ 80+ 檔個股</p>
+        <p class="meta">點代號可跳轉至 TradingView 查詢即時報價</p>
+    </div>
+</header>
+
+<nav>
+    <div class="nav-inner">
+        <a href="#thesis">核心邏輯</a>
+        <a href="#flowchart">流程圖</a>
+        <a href="#advanced-process">先進製程</a>
+        <a href="#advanced-packaging">先進封裝</a>
+        <a href="#pcb">PCB／載板</a>
+        <a href="#passive">被動元件</a>
+        <a href="#power">HVDC 電源</a>
+        <a href="#cooling">液冷散熱</a>
+        <a href="#optical">800G／CPO</a>
+        <a href="#memory">記憶體</a>
+        <a href="#satellite">低軌衛星</a>
+        <a href="#summary">投資觀念</a>
+    </div>
+</nav>
+
+<section id="thesis">
+    <div class="container">
+        <h2><span class="num-tag">00</span>核心命題</h2>
+        <p class="lead">所有題材都源自同一個源頭：<strong style="color: var(--accent-cyan);">AI 模型正以指數速度變大</strong>。需要更多算力、更多記憶體，這兩個需求衍生出 9 大產業題材，每個都是物理或熱力學上的必然。</p>
+
+        <div class="logic-box">
+            <ul>
+                <li><strong>不是「概念」是「物理」：</strong>七大題材本質都是物理或熱力學逼出來的解法</li>
+                <li><strong>整鏈共振：</strong>九條鏈表面分散，本質都是 AI 衍生品，會同步共振</li>
+                <li><strong>瓶頸最賺錢：</strong>每代升級的瓶頸環節議價權最強、毛利擴張最猛</li>
+                <li><strong>衛星是孿生兄弟：</strong>衛星和 AI 共享供應鏈，是 AI 無所不在的物理基礎</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="flowchart">
+    <div class="container">
+        <h2><span class="num-tag">01</span>產業鏈流程圖</h2>
+        <p class="lead">點擊任一節點跳轉至該題材詳細說明。</p>
+        <div class="flowchart-wrap">
+            <div class="flowchart">
+                <div class="layer-label">源頭驅動力</div>
+                <div class="layer"><div class="flow-node root"><div class="title">AI 模型指數變大</div><div class="desc" style="opacity:0.7;">GPT-3 (175B) → GPT-5 (兆級)</div></div></div>
+                <div class="arrow-down">↓</div>
+                <div class="layer-label">兩大需求</div>
+                <div class="layer">
+                    <div class="flow-node demand"><div class="title">更多算力</div><div class="desc">FLOPS 翻倍跳</div></div>
+                    <div class="flow-node demand"><div class="title">更多記憶體</div><div class="desc">參數 + 頻寬</div></div>
+                </div>
+                <div class="arrow-down">↓</div>
+                <div class="layer-label">九大供應鏈題材</div>
+                <div class="layer">
+                    <a href="#advanced-process" style="text-decoration:none;"><div class="flow-node"><div class="title">先進製程</div><div class="desc">2nm／A16</div></div></a>
+                    <a href="#advanced-packaging" style="text-decoration:none;"><div class="flow-node"><div class="title">先進封裝</div><div class="desc">CoWoS</div></div></a>
+                    <a href="#pcb" style="text-decoration:none;"><div class="flow-node"><div class="title">PCB／載板</div><div class="desc">M9 升級</div></div></a>
+                    <a href="#passive" style="text-decoration:none;"><div class="flow-node"><div class="title">被動元件</div><div class="desc">MLCC 暴量</div></div></a>
+                </div>
+                <div class="layer">
+                    <a href="#power" style="text-decoration:none;"><div class="flow-node"><div class="title">HVDC 電源</div><div class="desc">800VDC</div></div></a>
+                    <a href="#cooling" style="text-decoration:none;"><div class="flow-node"><div class="title">液冷散熱</div><div class="desc">CDU</div></div></a>
+                    <a href="#optical" style="text-decoration:none;"><div class="flow-node"><div class="title">800G／CPO</div><div class="desc">光通訊</div></div></a>
+                    <a href="#memory" style="text-decoration:none;"><div class="flow-node"><div class="title">HBM／DRAM</div><div class="desc">記憶體</div></div></a>
+                    <a href="#satellite" style="text-decoration:none;"><div class="flow-node"><div class="title">低軌衛星</div><div class="desc">神經系統</div></div></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="logic-box">
+            <h4>因果鏈拆解</h4>
+            <ul>
+                <li><strong>算力需求</strong> → 同晶片塞更多電晶體（先進製程）→ 多晶片整合（先進封裝）→ I/O 暴增（PCB／載板）→ 電流暴增（被動元件）</li>
+                <li><strong>算力副作用</strong> → 單櫃 100kW+ → HVDC 800VDC → 風冷上限突破 → 液冷必備</li>
+                <li><strong>多 GPU 平行</strong> → 跨節點通訊 → 800G／CPO 光通訊</li>
+                <li><strong>記憶體需求</strong> → HBM → 排擠 DRAM 產能 → DRAM 漲價</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="advanced-process">
+    <div class="container">
+        <h2><span class="num-tag">02</span>先進製程</h2>
+        <div class="topic-tag">廠務／設備／材料 ・ 2nm／A16 ・ TSMC 2026 資本支出 520–560 億美元</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>AI 算力 = 電晶體數 × 並行度。N2 已於 2025 Q4 量產，A16 確定 2026 H2 量產。台積電 2026 資本支出年增最高 37%。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">2026 資本支出</div><div class="value">520–560 億美元</div></div>
+            <div class="why-card"><div class="label">N2 量產</div><div class="value">2025 Q4 已量產</div></div>
+            <div class="why-card"><div class="label">A16 量產</div><div class="value">2026 H2 啟動</div></div>
+            <div class="why-card"><div class="label">EUV 單價</div><div class="value">逾 2 億美元</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">先進製程供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2330/" target="_blank">2330</a></td><td class="company">台積電</td><td class="role">先進製程龍頭</td><td class="price">2,300</td><td class="change up">+0.43%</td><td class="note hot">護國神山</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2404/" target="_blank">2404</a></td><td class="company">漢唐</td><td class="role">廠務工程龍頭</td><td class="price">1,000</td><td class="change up">+1.63%</td><td class="note hot">TSMC 擴廠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-6196/" target="_blank">6196</a></td><td class="company">帆宣</td><td class="role">廠務+設備整合</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">資本支出</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3131/" target="_blank">3131</a></td><td class="company">弘塑</td><td class="role">濕製程清洗設備</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">清洗設備</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3583/" target="_blank">3583</a></td><td class="company">辛耘</td><td class="role">晶圓再生、清洗</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">2nm 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3413/" target="_blank">3413</a></td><td class="company">京鼎</td><td class="role">半導體設備零組件</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">設備代工</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6187/" target="_blank">6187</a></td><td class="company">萬潤</td><td class="role">點膠／封裝設備</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">封裝設備</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3680/" target="_blank">3680</a></td><td class="company">家登</td><td class="role">光罩盒、晶圓盒</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">EUV 概念</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-1560/" target="_blank">1560</a></td><td class="company">中砂</td><td class="role">CMP 拋光墊修整器</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">耗材剛需</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-ASML/" target="_blank">ASML</a></td><td class="company">艾司摩爾</td><td class="role">EUV 微影機壟斷</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">全球壟斷</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-AMAT/" target="_blank">AMAT</a></td><td class="company">應用材料</td><td class="role">蝕刻、薄膜沉積</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">設備龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-LRCX/" target="_blank">LRCX</a></td><td class="company">科林研發</td><td class="role">蝕刻、清洗設備</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">HBM 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-KLAC/" target="_blank">KLAC</a></td><td class="company">科磊</td><td class="role">製程檢測、量測</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">良率關鍵</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="advanced-packaging">
+    <div class="container">
+        <h2><span class="num-tag">03</span>先進封裝</h2>
+        <div class="topic-tag">CoWoS／SoIC ・ 月產能 3.5 萬 → 11 萬片</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>單晶片有 reticle 物理極限。算力要繼續長只能「拼晶片」。CoWoS 是 AI 時代最大瓶頸。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">2024 月產能</div><div class="value">3.5 萬片</div></div>
+            <div class="why-card"><div class="label">2026 目標</div><div class="value">11 萬片</div></div>
+            <div class="why-card"><div class="label">主要瓶頸</div><div class="value">ABF、TSV 良率</div></div>
+            <div class="why-card"><div class="label">測試市場</div><div class="value">1,156 億元</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">先進封裝供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2330/" target="_blank">2330</a></td><td class="company">台積電</td><td class="role">CoWoS 唯一量產者</td><td class="price">2,300</td><td class="change up">+0.43%</td><td class="note hot">壟斷</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3711/" target="_blank">3711</a></td><td class="company">日月光投控</td><td class="role">全球最大 OSAT</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">OSAT 龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-6239/" target="_blank">6239</a></td><td class="company">力成</td><td class="role">HBM 封測</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">HBM 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2449/" target="_blank">2449</a></td><td class="company">京元電</td><td class="role">AI 晶片測試</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">NVDA 供應</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6223/" target="_blank">6223</a></td><td class="company">旺矽</td><td class="role">探針卡</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">CPO 概念</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6515/" target="_blank">6515</a></td><td class="company">穎崴</td><td class="role">測試介面</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">高成長</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-7769/" target="_blank">7769</a></td><td class="company">鴻勁</td><td class="role">半導體測試設備</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">AI 測試</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="pcb">
+    <div class="container">
+        <h2><span class="num-tag">04</span>PCB／載板</h2>
+        <div class="topic-tag">M9 規格升級 ・ 銅箔、玻纖布、ABF 全鏈短缺到 2028</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>GPU I/O pin 暴增、訊號跳到 NVLink 5，PCB 必須升級至 M8/M9 低損耗 CCL。ABF 載板全球只有台廠三家做得好。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">CCL 規格</div><div class="value">M6 → M8 → M9</div></div>
+            <div class="why-card"><div class="label">PCB 層數</div><div class="value">28–32 層+</div></div>
+            <div class="why-card"><div class="label">ABF 載板</div><div class="value">缺貨到 2028</div></div>
+            <div class="why-card"><div class="label">CCL 占成本</div><div class="value">30–40%</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">PCB／載板／上游材料完整供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3037/" target="_blank">3037</a></td><td class="company">欣興</td><td class="role">ABF 載板全球龍頭</td><td class="price">913</td><td class="change up">+1.90%</td><td class="note hot">AI 主力</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-8046/" target="_blank">8046</a></td><td class="company">南電</td><td class="role">ABF 載板第二</td><td class="price">880</td><td class="change down">-2.22%</td><td class="note hot">缺貨到 2028</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3189/" target="_blank">3189</a></td><td class="company">景碩</td><td class="role">ABF/BT 載板第三</td><td class="price">522</td><td class="change up">+4.92%</td><td class="note">HBM 載板</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2383/" target="_blank">2383</a></td><td class="company">台光電</td><td class="role">M8/M9 CCL 主力</td><td class="price">3,875</td><td class="change up">創高</td><td class="note hot">M9 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6274/" target="_blank">6274</a></td><td class="company">台燿</td><td class="role">高頻 CCL 龍頭</td><td class="price">946</td><td class="change up">漲停</td><td class="note">高頻領導</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-6213/" target="_blank">6213</a></td><td class="company">聯茂</td><td class="role">高速 CCL</td><td class="price">229.5</td><td class="change up">+2.46%</td><td class="note">追趕者</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2313/" target="_blank">2313</a></td><td class="company">華通</td><td class="role">SpaceX PCB 供應</td><td class="price">260</td><td class="change up">+0.50%</td><td class="note">衛星+AI</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3044/" target="_blank">3044</a></td><td class="company">健鼎</td><td class="role">AI 伺服器主板</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">AI 主板</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-4958/" target="_blank">4958</a></td><td class="company">臻鼎-KY</td><td class="role">PCB 全球龍頭</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">蘋果+AI</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2368/" target="_blank">2368</a></td><td class="company">金像電</td><td class="role">AI 伺服器 PCB</td><td class="no-data">—</td><td class="change up">+5.93%</td><td class="note hot">AI 純度高</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-8358/" target="_blank">8358</a></td><td class="company">金居</td><td class="role">HVLP 高頻銅箔</td><td class="no-data">—</td><td class="change down">-3.09%</td><td class="note hot">M9 必備</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-1815/" target="_blank">1815</a></td><td class="company">富喬</td><td class="role">Low-Dk 玻纖布</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">高速材料</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-5475/" target="_blank">5475</a></td><td class="company">德宏</td><td class="role">Low-Dk 玻纖布</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">第二供應</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-1717/" target="_blank">1717</a></td><td class="company">長興</td><td class="role">環氧樹脂</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">樹脂龍頭</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="passive">
+    <div class="container">
+        <h2><span class="num-tag">05</span>被動元件</h2>
+        <div class="topic-tag">MLCC／鉭電容／電感 ・ 單櫃 MLCC 用量 2,200 → 30,000+ 顆</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>B200 GPU 電壓 0.7V、電流 1,000A+，需大量去耦電容穩壓。AI 機櫃 MLCC 用量爆衝 14 倍。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">GPU 電流</div><div class="value">~1,000A+</div></div>
+            <div class="why-card"><div class="label">MLCC 用量</div><div class="value">2,200 → 30,000+</div></div>
+            <div class="why-card"><div class="label">2026 漲幅</div><div class="value">+10–20%</div></div>
+            <div class="why-card"><div class="label">鉭電容</div><div class="value">2 月已漲 30%</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">被動元件供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2327/" target="_blank">2327</a></td><td class="company">國巨*</td><td class="role">MLCC 全球前三</td><td class="price">462</td><td class="change up">+10.00%</td><td class="note hot">漲價週期</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2492/" target="_blank">2492</a></td><td class="company">華新科</td><td class="role">MLCC、入股松尾</td><td class="price">220</td><td class="change up">漲停</td><td class="note hot">收購擴張</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2456/" target="_blank">2456</a></td><td class="company">奇力新</td><td class="role">電感龍頭</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">電感受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-5317/" target="_blank">5317</a></td><td class="company">凱美</td><td class="role">鉭電容+MLCC</td><td class="no-data">—</td><td class="change up">漲停</td><td class="note hot">鉭電容主角</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3357/" target="_blank">3357</a></td><td class="company">臺慶科</td><td class="role">電感</td><td class="no-data">—</td><td class="change up">漲停</td><td class="note">電感漲價</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3068/" target="_blank">3068</a></td><td class="company">美磊</td><td class="role">高頻電感</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">RF 應用</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6173/" target="_blank">6173</a></td><td class="company">信昌電</td><td class="role">中容量 MLCC</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">利基型</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TSE-6981/" target="_blank">6981</a></td><td class="company">村田 Murata</td><td class="role">全球 MLCC 龍頭</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">漲價主導</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="power">
+    <div class="container">
+        <h2><span class="num-tag">06</span>HVDC 機櫃電源</h2>
+        <div class="topic-tag">800VDC 革命 ・ 單櫃功耗 100kW → 1MW</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>單 GPU 從 700W → 3,600W；單櫃從 40kW → 1MW。解法是直接拉 800VDC 進機櫃。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">A100 → Rubin Ultra</div><div class="value">25kW → 1MW</div></div>
+            <div class="why-card"><div class="label">GB200 單櫃</div><div class="value">120kW</div></div>
+            <div class="why-card"><div class="label">800VDC 量產</div><div class="value">2027 Vera Rubin</div></div>
+            <div class="why-card"><div class="label">傳統損失</div><div class="value">12–15%</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">HVDC 電源 + 電網／核電供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2308/" target="_blank">2308</a></td><td class="company">台達電</td><td class="role">800V HVDC、SST</td><td class="price">2,200</td><td class="change up">+3.84%</td><td class="note hot">電源龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2301/" target="_blank">2301</a></td><td class="company">光寶科</td><td class="role">800VDC Power Rack</td><td class="price">209</td><td class="change down">-1.18%</td><td class="note hot">GTC 展品</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3023/" target="_blank">3023</a></td><td class="company">信邦</td><td class="role">高壓電源線材</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">連接器</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3003/" target="_blank">3003</a></td><td class="company">健和興</td><td class="role">高壓連接器</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">連接器</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3211/" target="_blank">3211</a></td><td class="company">順達</td><td class="role">BBU 備援電池</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">BBU 主力</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3323/" target="_blank">3323</a></td><td class="company">加百裕</td><td class="role">BBU 模組</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">BBU 第二</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-8255/" target="_blank">8255</a></td><td class="company">朋程</td><td class="role">SiC/GaN 半導體</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">SiC 概念</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2481/" target="_blank">2481</a></td><td class="company">強茂</td><td class="role">功率元件</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">功率元件</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-ETN/" target="_blank">ETN</a></td><td class="company">Eaton</td><td class="role">資料中心電力管理</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">AI 電力</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-GEV/" target="_blank">GEV</a></td><td class="company">GE Vernova</td><td class="role">電網設備、發電</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">電網升級</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-PWR/" target="_blank">PWR</a></td><td class="company">Quanta Services</td><td class="role">電網建設</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">基建</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-CEG/" target="_blank">CEG</a></td><td class="company">Constellation</td><td class="role">美國最大核電業者</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">核電 AI</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-VST/" target="_blank">VST</a></td><td class="company">Vistra</td><td class="role">電力＋核電</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">電力概念</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="cooling">
+    <div class="container">
+        <h2><span class="num-tag">07</span>液冷散熱</h2>
+        <div class="topic-tag">CDU／冷板／QDC ・ 2026 滲透率 15% → 40–50%</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>風冷單櫃上限 50kW，GB200 已超標。水導熱係數比空氣高 20 倍——必須換液冷。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">2024 滲透率</div><div class="value">< 10%</div></div>
+            <div class="why-card"><div class="label">2026 預估</div><div class="value">40–50%</div></div>
+            <div class="why-card"><div class="label">CDU 占成本</div><div class="value">29%</div></div>
+            <div class="why-card"><div class="label">水 vs 空氣</div><div class="value">導熱高 20 倍</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">液冷散熱供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3017/" target="_blank">3017</a></td><td class="company">奇鋐</td><td class="role">冷板+CDU 龍頭</td><td class="price">2,555</td><td class="change up">+1.20%</td><td class="note hot">3 月 +112%</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3324/" target="_blank">3324</a></td><td class="company">雙鴻</td><td class="role">GB300 認證</td><td class="price">1,065</td><td class="change up">+0.47%</td><td class="note">高基期回檔</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3653/" target="_blank">3653</a></td><td class="company">健策</td><td class="role">封裝級液冷</td><td class="price">3,530</td><td class="change up">+9.95%</td><td class="note hot">2027 Rubin</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6805/" target="_blank">6805</a></td><td class="company">富世達</td><td class="role">QDC 快接頭</td><td class="price">1,830</td><td class="change up">+1.08%</td><td class="note hot">QDC 龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-8996/" target="_blank">8996</a></td><td class="company">高力</td><td class="role">CDU 熱交換器</td><td class="price">1,025</td><td class="change up">+2.84%</td><td class="note">熱交換</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2421/" target="_blank">2421</a></td><td class="company">建準</td><td class="role">風扇+液冷</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">混合方案</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2059/" target="_blank">2059</a></td><td class="company">川湖</td><td class="role">機櫃滑軌</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">機構件</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6591/" target="_blank">6591</a></td><td class="company">動力-KY</td><td class="role">Manifold 分歧管</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">利基</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="optical">
+    <div class="container">
+        <h2><span class="num-tag">08</span>800G／CPO 光通訊</h2>
+        <div class="topic-tag">2026 商轉元年 ・ NVIDIA 投資 40 億美元</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>10,000+ GPU 平行訓練，銅纜在 1.6T+ 物理極限。CPO 把光引擎貼身放在交換器晶片旁。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">CPO 市場 2023</div><div class="value">800 萬美元</div></div>
+            <div class="why-card"><div class="label">2030 預估</div><div class="value">93 億美元</div></div>
+            <div class="why-card"><div class="label">NVIDIA 投資</div><div class="value">LITE+COHR 各 20 億</div></div>
+            <div class="why-card"><div class="label">速率世代</div><div class="value">800G → 1.6T → 3.2T</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">800G／CPO 光通訊完整供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2345/" target="_blank">2345</a></td><td class="company">智邦</td><td class="role">800G/1.6T 白牌交換器</td><td class="price">2,675</td><td class="change up">+1.32%</td><td class="note hot">EPS 47.13</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3596/" target="_blank">3596</a></td><td class="company">智易</td><td class="role">網通整合</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">網通</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3363/" target="_blank">3363</a></td><td class="company">上詮</td><td class="role">FAU 光纖陣列</td><td class="price">902</td><td class="change up">+5.74%</td><td class="note hot">最純 CPO</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3163/" target="_blank">3163</a></td><td class="company">波若威</td><td class="role">AWG、光被動</td><td class="price">1,020</td><td class="change up">+1.45%</td><td class="note">CPO 概念</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3081/" target="_blank">3081</a></td><td class="company">聯亞</td><td class="role">InP 雷射磊晶</td><td class="price">2,945</td><td class="change up">+3.88%</td><td class="note">光源關鍵</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-4979/" target="_blank">4979</a></td><td class="company">華星光</td><td class="role">800G 光模組</td><td class="price">589</td><td class="change up">+1.83%</td><td class="note">800G 主力</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6442/" target="_blank">6442</a></td><td class="company">光聖</td><td class="role">光纖跳接</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">光被動</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3533/" target="_blank">3533</a></td><td class="company">嘉澤</td><td class="role">高速連接器</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">NVDA 供應</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-LITE/" target="_blank">LITE</a></td><td class="company">Lumentum</td><td class="role">CPO 雷射、矽光子</td><td class="price">$1,052</td><td class="change up">+4.50%</td><td class="note hot">CPO 核心</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-COHR/" target="_blank">COHR</a></td><td class="company">Coherent</td><td class="role">光通訊整合方案</td><td class="no-data">—</td><td class="change up">YTD +97%</td><td class="note hot">NVIDIA 投資</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-AVGO/" target="_blank">AVGO</a></td><td class="company">Broadcom</td><td class="role">CPO 交換器晶片</td><td class="price">$417.72</td><td class="change up">+1.18%</td><td class="note hot">市值 2 兆</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-GLW/" target="_blank">GLW</a></td><td class="company">Corning</td><td class="role">光纖玻璃龍頭</td><td class="price">$207.97</td><td class="change up">+2.34%</td><td class="note">光纖龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-CIEN/" target="_blank">CIEN</a></td><td class="company">Ciena</td><td class="role">長途光網路</td><td class="price">$582.48</td><td class="change up">+3.55%</td><td class="note">長途光通訊</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-ANET/" target="_blank">ANET</a></td><td class="company">Arista</td><td class="role">資料中心交換器</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">交換器龍頭</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="memory">
+    <div class="container">
+        <h2><span class="num-tag">09</span>記憶體</h2>
+        <div class="topic-tag">HBM／DRAM／NAND ・ DRAM 漲 70%・HBM 排擠延續至 2028</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>HBM 用最先進製程、3D 堆疊+TSV，占用晶圓是普通 DRAM 的 3 倍。三大廠全力轉產 HBM，普通 DRAM 產能被擠光。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">DRAM 漲幅</div><div class="value">+50–70%</div></div>
+            <div class="why-card"><div class="label">HBM 占產能</div><div class="value">普通 DRAM 3 倍</div></div>
+            <div class="why-card"><div class="label">失衡延續</div><div class="value">2028 H2</div></div>
+            <div class="why-card"><div class="label">南亞科 Q1</div><div class="value">營收 +583%</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">記憶體完整供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2408/" target="_blank">2408</a></td><td class="company">南亞科</td><td class="role">利基型 DRAM</td><td class="no-data">—</td><td class="change up">10日 +31.73%</td><td class="note hot">Q1 +583%</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2344/" target="_blank">2344</a></td><td class="company">華邦電</td><td class="role">DRAM+Flash</td><td class="no-data">—</td><td class="change up">10日 +21.87%</td><td class="note hot">EPS 27→52</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-6770/" target="_blank">6770</a></td><td class="company">力積電</td><td class="role">晶圓代工+DRAM</td><td class="price">62.20</td><td class="change up">+2.81%</td><td class="note">轉型中</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2337/" target="_blank">2337</a></td><td class="company">旺宏</td><td class="role">NOR Flash 龍頭</td><td class="price">169.50</td><td class="change up">+0.89%</td><td class="note">NOR 漲價</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-8299/" target="_blank">8299</a></td><td class="company">群聯</td><td class="role">NAND 控制 IC</td><td class="price">2,670</td><td class="change up">漲停</td><td class="note hot">NAND 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2451/" target="_blank">2451</a></td><td class="company">創見</td><td class="role">記憶體模組</td><td class="price">343.50</td><td class="change up">+5.05%</td><td class="note">利基</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-5289/" target="_blank">5289</a></td><td class="company">宜鼎</td><td class="role">工控儲存</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">工控龍頭</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-4967/" target="_blank">4967</a></td><td class="company">十銓</td><td class="role">記憶體模組</td><td class="no-data">—</td><td class="change down">月減 59%</td><td class="note">模組</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-MU/" target="_blank">MU</a></td><td class="company">Micron</td><td class="role">HBM 三大供應商</td><td class="price">$802.50</td><td class="change up">+2.15%</td><td class="note hot">HBM 受惠</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-SNDK/" target="_blank">SNDK</a></td><td class="company">SanDisk</td><td class="role">NAND Flash 大廠</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">NAND 漲價</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/KRX-000660/" target="_blank">000660</a></td><td class="company">SK 海力士</td><td class="role">HBM 全球龍頭</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">HBM 王者</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/KRX-005930/" target="_blank">005930</a></td><td class="company">三星電子</td><td class="role">HBM+全記憶體</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">記憶體全餐</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="satellite">
+    <div class="container">
+        <h2><span class="num-tag">10</span>低軌衛星</h2>
+        <div class="topic-tag">AI 的「天上神經系統」 ・ SpaceX IPO 2026・估值 1.5 兆美元</div>
+        <div class="topic-thesis"><strong>核心邏輯：</strong>低軌衛星和 AI 共享供應鏈，是 AI「無所不在」的物理基礎。</div>
+
+        <div class="why-grid">
+            <div class="why-card"><div class="label">2025 在軌</div><div class="value">8,000+ 顆</div></div>
+            <div class="why-card"><div class="label">2026 新發射</div><div class="value">5,100+ 顆</div></div>
+            <div class="why-card"><div class="label">Starlink 營收</div><div class="value">118 億美元</div></div>
+            <div class="why-card"><div class="label">SpaceX 估值</div><div class="value">1.5 兆美元</div></div>
+        </div>
+
+        <div class="stock-table-wrap">
+            <div class="stock-table-header">低軌衛星完整供應鏈</div>
+            <table class="stock-table">
+                <thead><tr><th>代號</th><th>公司</th><th>定位</th><th class="num">收盤價</th><th class="num">漲跌幅</th><th>備註</th></tr></thead>
+                <tbody>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3491/" target="_blank">3491</a></td><td class="company">昇達科</td><td class="role">衛星射頻 RF</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">血統最純</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2313/" target="_blank">2313</a></td><td class="company">華通</td><td class="role">SpaceX PCB 供應</td><td class="price">260</td><td class="change up">+0.50%</td><td class="note hot">SpaceX 主力</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-6285/" target="_blank">6285</a></td><td class="company">啟碁</td><td class="role">Starlink 地面終端</td><td class="price">282</td><td class="change up">+0.70%</td><td class="note hot">地面終端</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2367/" target="_blank">2367</a></td><td class="company">燿華</td><td class="role">衛星 PCB</td><td class="price">65.8</td><td class="change down">-7.52%</td><td class="note">衛星 PCB</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3138/" target="_blank">3138</a></td><td class="company">耀登</td><td class="role">相位陣列天線</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">天線</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2485/" target="_blank">2485</a></td><td class="company">兆赫</td><td class="role">衛星終端</td><td class="price">62.1</td><td class="change down">-0.16%</td><td class="note">終端</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-3380/" target="_blank">3380</a></td><td class="company">明泰</td><td class="role">網通設備、地面站</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">地面站</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TWSE-2314/" target="_blank">2314</a></td><td class="company">台揚</td><td class="role">衛星通訊系統</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">老牌</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-3105/" target="_blank">3105</a></td><td class="company">穩懋</td><td class="role">GaAs 功率放大器</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">雙引擎</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/TPEX-6568/" target="_blank">6568</a></td><td class="company">宏觀</td><td class="role">衛星天線、射頻</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">RF</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-ASTS/" target="_blank">ASTS</a></td><td class="company">AST SpaceMobile</td><td class="role">手機直連衛星</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">D2C 純股</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-IRDM/" target="_blank">IRDM</a></td><td class="company">Iridium</td><td class="role">老牌衛星通訊</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">穩定獲利</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NASDAQ-RKLB/" target="_blank">RKLB</a></td><td class="company">Rocket Lab</td><td class="role">小型火箭+衛星</td><td class="no-data">—</td><td class="no-data">—</td><td class="note hot">SpaceX 對手</td></tr>
+                    <tr><td class="code"><a href="https://www.tradingview.com/symbols/NYSE-LMT/" target="_blank">LMT</a></td><td class="company">Lockheed Martin</td><td class="role">國防衛星+太空</td><td class="no-data">—</td><td class="no-data">—</td><td class="note">國防+太空</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="summary">
+    <div class="container">
+        <h2><span class="num-tag">11</span>投資觀念與風險</h2>
+
+        <div class="logic-box">
+            <h4>估值該怎麼看</h4>
+            <ul>
+                <li><strong>穩定獲利股</strong> 看 PER：台積電、智邦、台達電</li>
+                <li><strong>景氣循環股</strong> 看 PBR：南亞科、華邦電、被動元件</li>
+                <li><strong>高成長股</strong> 看 PEG：奇鋐、健策、嘉澤</li>
+                <li><strong>夢想股</strong> 看客戶與訂單：CPO 純概念股</li>
+            </ul>
+        </div>
+
+        <div class="logic-box">
+            <h4>三大風險警示</h4>
+            <ul>
+                <li><strong>整鏈共振：</strong>九大題材本質都是 AI 衍生品，AI 資本支出循環反轉時全鏈會同時跌</li>
+                <li><strong>估值偏高：</strong>許多個股 PER 已 30 倍以上，部分美股已是「夢想股」等級</li>
+                <li><strong>景氣循環陷阱：</strong>記憶體、被動元件屬循環股，循環頂點 PER 低不是便宜、是危險信號</li>
+            </ul>
+        </div>
+
+        <div class="logic-box">
+            <h4>三個觀察重點</h4>
+            <ul>
+                <li><strong>瓶頸環節：</strong>2026 預期是 ABF 載板、液冷 CDU、HVDC、記憶體</li>
+                <li><strong>NVIDIA 路線圖：</strong>NVIDIA 規格升級會點火整鏈</li>
+                <li><strong>雙引擎股：</strong>同時受惠 AI + 衛星的公司業績可見度最長</li>
+            </ul>
+        </div>
+
+        <div class="disclaimer">
+            <h3>重要提醒</h3>
+            <p><strong>本資料為產業研究與資訊整理，非投資建議。</strong>表內數字為 2026/5/14 收盤資料。標「—」的個股因搜尋限制暫無資料，可點代號到 TradingView 查最新。</p>
+            <p><strong>需要更新報價？</strong>跟 Claude 說「幫我更新供應鏈報價」即可，我會重新搜尋並更新此頁面。</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p>AI 浪潮供應鏈精簡版 ・ 資料更新 2026/05/14</p>
+        <p style="margin-top: 6px; font-size: 11px;">每天可請 Claude 更新一次報價</p>
+    </div>
+</footer>
+
+</body>
+</html>
