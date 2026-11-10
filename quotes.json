@@ -369,128 +369,128 @@
     "tradingview": "TWSE-8996"
   },
   "AMAT": {
-    "close": "369",
-    "change_pct": "-0.42%",
+    "close": "373",
+    "change_pct": "+0.53%",
     "ticker": "AMAT",
     "tradingview": "NASDAQ-AMAT"
   },
   "ANET": {
-    "close": "182",
-    "change_pct": "-2.09%",
+    "close": "185",
+    "change_pct": "-0.62%",
     "ticker": "ANET",
     "tradingview": "NYSE-ANET"
   },
   "ASML": {
-    "close": "1,502",
-    "change_pct": "-0.77%",
+    "close": "1,508",
+    "change_pct": "-0.36%",
     "ticker": "ASML",
     "tradingview": "NASDAQ-ASML"
   },
   "ASTS": {
-    "close": "32.7",
-    "change_pct": "-11.36%",
+    "close": "33.69",
+    "change_pct": "-8.67%",
     "ticker": "ASTS",
     "tradingview": "NASDAQ-ASTS"
   },
   "AVGO": {
-    "close": "327",
-    "change_pct": "+2.38%",
+    "close": "332",
+    "change_pct": "+3.91%",
     "ticker": "AVGO",
     "tradingview": "NASDAQ-AVGO"
   },
   "CEG": {
-    "close": "265",
-    "change_pct": "-3.85%",
+    "close": "268",
+    "change_pct": "-3.02%",
     "ticker": "CEG",
     "tradingview": "NASDAQ-CEG"
   },
   "CIEN": {
-    "close": "268",
-    "change_pct": "-0.34%",
+    "close": "272",
+    "change_pct": "+1.03%",
     "ticker": "CIEN",
     "tradingview": "NYSE-CIEN"
   },
   "COHR": {
-    "close": "209",
-    "change_pct": "-7.20%",
+    "close": "215",
+    "change_pct": "-4.68%",
     "ticker": "COHR",
     "tradingview": "NYSE-COHR"
   },
   "ETN": {
-    "close": "351",
-    "change_pct": "-2.41%",
+    "close": "354",
+    "change_pct": "-1.41%",
     "ticker": "ETN",
     "tradingview": "NYSE-ETN"
   },
   "GEV": {
-    "close": "769",
-    "change_pct": "-7.22%",
+    "close": "797",
+    "change_pct": "-3.89%",
     "ticker": "GEV",
     "tradingview": "NYSE-GEV"
   },
   "GLW": {
-    "close": "111",
-    "change_pct": "-4.33%",
+    "close": "112",
+    "change_pct": "-3.29%",
     "ticker": "GLW",
     "tradingview": "NYSE-GLW"
   },
   "IRDM": {
-    "close": "45.44",
-    "change_pct": "+0.81%",
+    "close": "46.13",
+    "change_pct": "+2.33%",
     "ticker": "IRDM",
     "tradingview": "NASDAQ-IRDM"
   },
   "KLAC": {
-    "close": "152",
-    "change_pct": "+0.37%",
+    "close": "153",
+    "change_pct": "+1.06%",
     "ticker": "KLAC",
     "tradingview": "NASDAQ-KLAC"
   },
   "LITE": {
-    "close": "576",
-    "change_pct": "-3.32%",
+    "close": "586",
+    "change_pct": "-1.78%",
     "ticker": "LITE",
     "tradingview": "NASDAQ-LITE"
   },
   "LMT": {
     "close": "603",
-    "change_pct": "+2.57%",
+    "change_pct": "+2.54%",
     "ticker": "LMT",
     "tradingview": "NYSE-LMT"
   },
   "LRCX": {
-    "close": "221",
-    "change_pct": "-0.02%",
+    "close": "222",
+    "change_pct": "+0.49%",
     "ticker": "LRCX",
     "tradingview": "NASDAQ-LRCX"
   },
   "MU": {
-    "close": "707",
-    "change_pct": "-3.61%",
+    "close": "725",
+    "change_pct": "-1.10%",
     "ticker": "MU",
     "tradingview": "NASDAQ-MU"
   },
   "PWR": {
-    "close": "579",
-    "change_pct": "-2.17%",
+    "close": "583",
+    "change_pct": "-1.41%",
     "ticker": "PWR",
     "tradingview": "NYSE-PWR"
   },
   "RKLB": {
-    "close": "59.93",
-    "change_pct": "+1.82%",
+    "close": "62.71",
+    "change_pct": "+6.54%",
     "ticker": "RKLB",
     "tradingview": "NASDAQ-RKLB"
   },
   "SNDK": {
-    "close": "838",
-    "change_pct": "-5.52%",
+    "close": "860",
+    "change_pct": "-2.99%",
     "ticker": "SNDK",
     "tradingview": "NASDAQ-SNDK"
   },
   "VST": {
-    "close": "130",
-    "change_pct": "-2.93%",
+    "close": "131",
+    "change_pct": "-2.05%",
     "ticker": "VST",
     "tradingview": "NYSE-VST"
   },
